@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ElevenLabs } from 'elevenlabs-node';
+import { ElevenLabs } from '@11labs/client';
 
 const voice = new ElevenLabs({
   apiKey: process.env.ELEVENLABS_API_KEY || '',

@@ -13,6 +13,48 @@
   src: url('/fonts/esanmanru Medium.ttf') format('truetype');
 }
 
+
+
+/* 슬라이더 커스텀 스타일 */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #8b5cf6, #ec4899);
+  cursor: pointer;
+  box-shadow: 0 0 2px 0 #555;
+}
+
+.slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #8b5cf6, #ec4899);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 2px 0 #555;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #8b5cf6, #ec4899);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #7c3aed, #db2777);
+}
+
 @font-face {
   font-family: 'SB 어그로 T';
   src: url('/fonts/SB 어그로 T.ttf') format('truetype');

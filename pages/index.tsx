@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import useSubtitleStyle from "../hooks/useSubtitleStyle";
 import { generateVideo, generateVideoWithSubtitles } from "../lib/ffmpegHelper";
@@ -325,370 +326,459 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gray-100">
-      {/* 9:16 미리보기 */}
-      <div className="w-1/2 flex justify-center items-center p-4 bg-white shadow-lg">
-        <div className="aspect-[9/16] w-[360px] border relative overflow-hidden">
-          {imageUrl ? (
-            <img src={imageUrl} alt="미리보기 이미지" className="absolute inset-0 w-full h-full object-cover" />
-          ) : (
-            <div className="absolute inset-0 bg-black" />
-          )}
-
-          <div className="absolute top-4 w-full text-center" style={{ ...style }}>{script.top}</div>
-          <div className="absolute top-1/3 w-full text-center" style={{ ...style }}>{script.middle}</div>
-          <div className="absolute bottom-4 w-full text-center" style={{ ...style }}>{script.bottom}</div>
-        </div>
-      </div>
-
-      {/* 도구 패널 */}
-      <div className="w-1/2 p-6 flex flex-col space-y-4 overflow-y-auto">
-        <h1 className="text-2xl font-bold">🎬 숏츠 자동 생성기</h1>
-
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="내용 입력 후 스크립트를 생성하세요"
-          className="w-full h-32 p-2 border rounded resize-none"
-        ></textarea>
-
-        <button onClick={handleGenerate} className="bg-blue-600 text-white py-2 rounded">스크립트 생성</button>
-
-        <hr />
-
-        <h2 className="font-bold text-lg">🖼 배경 이미지 설정</h2>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-1">이미지 스타일:</label>
-            <select
-              className="p-2 border rounded w-full"
-              value={imageStyle}
-              onChange={(e) => setImageStyle(e.target.value)}
-            >
-              <option value="극사실주의">극사실주의</option>
-              <option value="만화 스타일">만화 스타일</option>
-              <option value="픽사 스타일">픽사 스타일</option>
-              <option value="수채화">수채화</option>
-              <option value="디지털 아트">디지털 아트</option>
-            </select>
-          </div>
-
-          <button onClick={handleImageGenerate} className="bg-green-600 text-white py-2 rounded w-full">
-            AI 이미지 생성
-          </button>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="p-2 border rounded w-full"
-          />
-        </div>
-
-        <hr />
-
-        <h2 className="font-bold text-lg">🗣 음성 선택</h2>
-
-        <select
-          className="p-2 border rounded w-full"
-          value={voiceId}
-          onChange={(e) => setVoiceId(e.target.value)}
-        >
-          {elevenVoiceList.map((voice) => (
-            <option key={voice.id} value={voice.id}>
-              {voice.label} ({voice.id.slice(0, 6)}...)
-            </option>
-          ))}
-        </select>
-
-        <button 
-          onClick={handleVoiceGenerate}
-          disabled={isGeneratingVoice || !script.middle}
-          className={`bg-purple-600 text-white py-2 px-4 rounded mt-2 ${
-            isGeneratingVoice || !script.middle ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          {isGeneratingVoice ? '음성 생성 중...' : '음성 생성'}
-        </button>
-
-        {audioSrc && (
-          <>
-            <audio controls src={audioSrc} className="mt-2 w-full" />
-            {subtitles.length > 0 && (
-              <div className="bg-white p-4 border rounded mt-4">
-                <h3 className="font-bold">🕒 자막 타이밍 확인</h3>
-                <ul className="text-sm max-h-60 overflow-y-auto">
-                  {subtitles.map((s, i) => (
-                    <li key={i} className="mb-2">
-                      <strong>{s.start} → {s.end}초</strong>: {s.text}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </>
-        )}
-
-        <hr />
-
-        <h2 className="font-bold text-lg">✏️ 자막 스타일 조정</h2>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-1">폰트 선택:</label>
-            <select
-              className="p-2 border rounded w-full"
-              value={style.fontFamily}
-              onChange={(e) => setStyle({ ...style, fontFamily: e.target.value })}
-            >
-              <option value="CookieRun Regular">CookieRun Regular</option>
-              <option value="The Jamsil 3 Regular">The Jamsil 3 Regular</option>
-              <option value="esanmanru Medium">esanmanru Medium</option>
-              <option value="SB 어그로 T">SB 어그로 T</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-1">글자 크기:</label>
-            <input
-              type="range"
-              min="12"
-              max="48"
-              value={style.fontSize}
-              onChange={(e) => setStyle({ ...style, fontSize: Number(e.target.value) })}
-              className="w-full"
-            />
-            <span className="text-sm text-gray-600">{style.fontSize}px</span>
-          </div>
-
-          <div>
-            <label className="block mb-1">글자 색상:</label>
-            <input
-              type="color"
-              value={style.color}
-              onChange={(e) => setStyle({ ...style, color: e.target.value })}
-              className="w-full h-10"
-            />
-          </div>
-        </div>
-
-        <hr />
-
-        <h2 className="font-bold text-lg">📂 자막 폰트 업로드</h2>
-        <input 
-          type="file" 
-          accept=".ttf" 
-          onChange={handleFontUpload} 
-          className="p-2 border rounded w-full" 
-        />
-
-        <button
-          onClick={handleRenderWithSubtitles}
-          disabled={isGeneratingVideo || !imageUrl || !audioSrc || !fontFile || subtitles.length === 0}
-          className={`bg-red-600 text-white py-2 px-4 mt-2 rounded w-full ${
-            isGeneratingVideo || !imageUrl || !audioSrc || !fontFile || subtitles.length === 0 
-              ? 'opacity-50 cursor-not-allowed' 
-              : ''
-          }`}
-        >
-          {isGeneratingVideo ? '자막 영상 생성 중...' : '🎬 자막 영상 생성'}
-        </button>
-
-        {videoBlob && (
-          <a 
-            href={URL.createObjectURL(videoBlob)} 
-            download="shorts_subtitled.mp4" 
-            className="block mt-2 text-blue-600 underline"
-          >
-            ▶ 자막 포함 영상 다운로드
-          </a>
-        )}
-
-        <hr />
-
-        <h2 className="font-bold text-lg">📦 템플릿 저장/불러오기</h2>
-
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="템플릿 이름"
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
-              className="p-2 border rounded flex-1"
-            />
-            <button
-              onClick={() => {
-                if (!templateName.trim()) {
-                  alert("템플릿 이름을 입력해주세요.");
-                  return;
-                }
-                saveTemplate(templateName);
-                setTemplateName("");
-                alert("템플릿 저장 완료");
-              }}
-              className="bg-green-600 text-white py-2 px-4 rounded"
-            >
-              저장하기
-            </button>
-          </div>
-
-          {templates.length > 0 && (
-            <div>
-              <label className="font-semibold block mb-2">📁 템플릿 불러오기</label>
-              <select
-                className="p-2 border rounded w-full"
-                onChange={(e) => {
-                  const selected = templates.find((t) => t.name === e.target.value);
-                  if (selected) loadTemplate(selected);
-                }}
-              >
-                <option value="">선택하세요</option>
-                {templates.map((t) => (
-                  <option key={t.name} value={t.name}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-
-        <hr />
-
-        <h2 className="font-bold text-lg">🎥 GPT 스토리보드 자동 생성</h2>
-        <button
-          onClick={handleStoryboardGenerate}
-          className="bg-indigo-600 text-white py-2 px-4 rounded"
-        >
-          스토리보드 생성하기
-        </button>
-
-        {storyboard && (
-          <>
-            <pre className="mt-4 whitespace-pre-wrap text-sm bg-gray-100 p-4 rounded border max-h-80 overflow-y-auto">
-              {storyboard}
-            </pre>
-            <button
-              onClick={handleStoryboardToImages}
-              className="mt-4 bg-purple-600 text-white py-2 px-4 rounded"
-            >
-              스토리보드 이미지 자동 생성
-            </button>
-          </>
-        )}
-
-        {speechLines.length > 0 && (
-          <div className="mt-6">
-            <h2 className="font-bold text-lg mb-4">🗣️ 대사 처리</h2>
-            {speechLines.map((line, i) => (
-              <div key={i} className="p-3 border rounded mb-2 bg-white shadow-sm">
-                <p className="font-semibold">{line.speaker || `${line.ageGroup} ${line.gender}`}</p>
-                <p className="text-gray-800 mb-1">🗣️ "{line.text}"</p>
-
-                {line.voiceType === "auto" ? (
-                  <div>
-                    <p className="text-green-600 text-sm">✔️ 자동 음성: {line.voiceId}</p>
-                    <button
-                      onClick={() => handleGenerateAudio(line, i)}
-                      disabled={isGeneratingAudio}
-                      className={`mt-2 bg-blue-600 text-white px-3 py-1 rounded text-xs ${
-                        isGeneratingAudio ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      {isGeneratingAudio ? "생성 중..." : "음성 생성"}
-                    </button>
-                    {line.generatedAudioUrl && (
-                      <audio
-                        controls
-                        src={line.generatedAudioUrl}
-                        className="mt-2 w-full"
-                        onError={(e) => {
-                          console.error("Audio playback error:", e);
-                          alert("음성 재생 중 오류가 발생했습니다.");
-                        }}
-                      />
-                    )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="flex h-screen w-full">
+        {/* 9:16 미리보기 - 왼쪽 */}
+        <div className="w-1/2 flex justify-center items-center p-8">
+          <div className="relative">
+            {/* 폰 프레임 효과 */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-3xl blur opacity-30"></div>
+            <div className="relative aspect-[9/16] w-[360px] bg-black rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-800">
+              {imageUrl ? (
+                <img src={imageUrl} alt="미리보기 이미지" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center">
+                  <div className="text-gray-400 text-center">
+                    <div className="text-6xl mb-4">📱</div>
+                    <p>미리보기</p>
                   </div>
-                ) : (
-                  <div className="bg-yellow-100 p-2 rounded text-sm">
-                    <p className="text-yellow-800 font-bold mb-1">🚨 수동 더빙 필요 (타입캐스트)</p>
-                    <p>타입캐스트에서 음성을 생성한 뒤 mp3 파일을 업로드해주세요.</p>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(line.text)}
-                      className="bg-gray-200 px-3 py-1 rounded text-xs mt-2"
-                    >
-                      📋 대본 복사
-                    </button>
+                </div>
+              )}
 
+              {/* 텍스트 오버레이 */}
+              <div className="absolute top-6 w-full text-center px-4" style={{ ...style }}>
+                <div className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 inline-block">
+                  {script.top}
+                </div>
+              </div>
+              <div className="absolute top-1/3 w-full text-center px-4" style={{ ...style }}>
+                <div className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 inline-block">
+                  {script.middle}
+                </div>
+              </div>
+              <div className="absolute bottom-6 w-full text-center px-4" style={{ ...style }}>
+                <div className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-2 inline-block">
+                  {script.bottom}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 도구 패널 - 오른쪽 */}
+        <div className="w-1/2 p-6 overflow-y-auto bg-white/5 backdrop-blur-sm">
+          <div className="space-y-6">
+            {/* 헤더 */}
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-white mb-2">🎬 숏츠 스튜디오</h1>
+              <p className="text-gray-300">AI로 만드는 전문적인 쇼츠 영상</p>
+            </div>
+
+            {/* 프롬프트 입력 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                ✨ 아이디어 입력
+              </h2>
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="어떤 내용의 쇼츠를 만들고 싶나요? 예: 건강한 아침 루틴, 요리 레시피, 여행 팁 등..."
+                className="w-full h-32 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+              <button 
+                onClick={handleGenerate}
+                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105"
+              >
+                🚀 스크립트 생성
+              </button>
+            </div>
+
+            {/* 이미지 설정 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                🖼️ 배경 이미지
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">이미지 스타일</label>
+                  <select
+                    className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={imageStyle}
+                    onChange={(e) => setImageStyle(e.target.value)}
+                  >
+                    <option value="극사실주의">🌟 극사실주의</option>
+                    <option value="만화 스타일">🎨 만화 스타일</option>
+                    <option value="픽사 스타일">🎬 픽사 스타일</option>
+                    <option value="수채화">🖌️ 수채화</option>
+                    <option value="디지털 아트">💫 디지털 아트</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <button 
+                    onClick={handleImageGenerate} 
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 transform hover:scale-105"
+                  >
+                    ✨ AI 이미지 생성
+                  </button>
+                  
+                  <label className="block">
+                    <span className="sr-only">이미지 업로드</span>
                     <input
                       type="file"
-                      accept="audio/mp3"
-                      onChange={(e) =>
-                        setSpeechLines((prev) =>
-                          prev.map((s, idx) =>
-                            idx === i ? { ...s, audioFile: e.target.files?.[0] || null } : s
-                          )
-                        )
-                      }
-                      className="mt-2 block"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="block w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer cursor-pointer"
                     />
-                    {line.audioFile && (
-                      <>
-                        <p className="text-xs mt-1 text-blue-600">
-                          ✔️ 업로드 완료: {line.audioFile.name}
-                        </p>
-                        <audio
-                          controls
-                          src={URL.createObjectURL(line.audioFile)}
-                          className="mt-2 w-full"
-                        />
-                      </>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* 음성 설정 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                🎤 음성 설정
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">보이스 선택</label>
+                  <select
+                    className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={voiceId}
+                    onChange={(e) => setVoiceId(e.target.value)}
+                  >
+                    {elevenVoiceList.map((voice) => (
+                      <option key={voice.id} value={voice.id}>
+                        {voice.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button 
+                  onClick={handleVoiceGenerate}
+                  disabled={isGeneratingVoice || !script.middle}
+                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    isGeneratingVoice || !script.middle 
+                      ? 'bg-gray-500 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+                  } text-white`}
+                >
+                  {isGeneratingVoice ? '🎵 생성 중...' : '🎵 음성 생성'}
+                </button>
+
+                {audioSrc && (
+                  <div className="mt-4 p-4 bg-white/5 rounded-xl">
+                    <audio controls src={audioSrc} className="w-full" />
+                    {subtitles.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-white mb-2">🕒 자막 타이밍</h4>
+                        <div className="max-h-40 overflow-y-auto space-y-1">
+                          {subtitles.map((s, i) => (
+                            <div key={i} className="text-sm text-gray-300 bg-white/5 p-2 rounded">
+                              <span className="text-purple-300 font-medium">{s.start}→{s.end}초</span>: {s.text}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {generatedImages.length > 0 && speechLines.length > 0 && (
-          <div className="mt-6 border-t pt-4">
-            <h2 className="font-bold text-lg mb-4">🎬 최종 영상 렌더링</h2>
-            <button
-              onClick={handleRender}
-              className="bg-red-600 text-white py-2 px-4 rounded w-full"
-            >
-              🎬 영상 렌더링 & 다운로드
-            </button>
+            {/* 자막 스타일 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                ✏️ 자막 스타일
+              </h2>
 
-            {finalVideoBlob && (
-              <a
-                href={URL.createObjectURL(finalVideoBlob)}
-                download="shorts_final.mp4"
-                className="mt-2 block text-blue-600 underline"
-              >
-                ▶ 최종 영상 다운로드
-              </a>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">폰트</label>
+                  <select
+                    className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={style.fontFamily}
+                    onChange={(e) => setStyle({ ...style, fontFamily: e.target.value })}
+                  >
+                    <option value="CookieRun Regular">CookieRun Regular</option>
+                    <option value="The Jamsil 3 Regular">The Jamsil 3 Regular</option>
+                    <option value="esanmanru Medium">esanmanru Medium</option>
+                    <option value="SB 어그로 T">SB 어그로 T</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    크기: {style.fontSize}px
+                  </label>
+                  <input
+                    type="range"
+                    min="12"
+                    max="48"
+                    value={style.fontSize}
+                    onChange={(e) => setStyle({ ...style, fontSize: Number(e.target.value) })}
+                    className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">색상</label>
+                  <input
+                    type="color"
+                    value={style.color}
+                    onChange={(e) => setStyle({ ...style, color: e.target.value })}
+                    className="w-full h-12 rounded-xl cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 폰트 업로드 & 렌더링 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                🎬 영상 제작
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">폰트 파일 (.ttf)</label>
+                  <input 
+                    type="file" 
+                    accept=".ttf" 
+                    onChange={handleFontUpload} 
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer cursor-pointer"
+                  />
+                </div>
+
+                <button
+                  onClick={handleRenderWithSubtitles}
+                  disabled={isGeneratingVideo || !imageUrl || !audioSrc || !fontFile || subtitles.length === 0}
+                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 ${
+                    isGeneratingVideo || !imageUrl || !audioSrc || !fontFile || subtitles.length === 0 
+                      ? 'bg-gray-500 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600'
+                  } text-white`}
+                >
+                  {isGeneratingVideo ? '🎬 제작 중...' : '🎬 영상 제작'}
+                </button>
+
+                {videoBlob && (
+                  <a 
+                    href={URL.createObjectURL(videoBlob)} 
+                    download="shorts_video.mp4" 
+                    className="block w-full text-center bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 transform hover:scale-105"
+                  >
+                    ⬇️ 영상 다운로드
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* 템플릿 관리 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                📦 템플릿 관리
+              </h2>
+
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="템플릿 이름"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    className="flex-1 p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!templateName.trim()) {
+                        alert("템플릿 이름을 입력해주세요.");
+                        return;
+                      }
+                      saveTemplate(templateName);
+                      setTemplateName("");
+                      alert("템플릿 저장 완료");
+                    }}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
+                  >
+                    💾 저장
+                  </button>
+                </div>
+
+                {templates.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">저장된 템플릿</label>
+                    <select
+                      className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      onChange={(e) => {
+                        const selected = templates.find((t) => t.name === e.target.value);
+                        if (selected) loadTemplate(selected);
+                      }}
+                    >
+                      <option value="">선택하세요</option>
+                      {templates.map((t) => (
+                        <option key={t.name} value={t.name}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 고급 기능 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                🎥 고급 기능
+              </h2>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={handleStoryboardGenerate}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105"
+                >
+                  📝 스토리보드 생성
+                </button>
+
+                {storyboard && (
+                  <>
+                    <div className="mt-4 p-4 bg-white/5 rounded-xl max-h-60 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap text-sm text-gray-300">{storyboard}</pre>
+                    </div>
+                    <button
+                      onClick={handleStoryboardToImages}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105"
+                    >
+                      🖼️ 이미지 자동 생성
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* 대사 처리 */}
+            {speechLines.length > 0 && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                  🗣️ 대사 처리
+                </h2>
+                <div className="space-y-4">
+                  {speechLines.map((line, i) => (
+                    <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/10">
+                      <p className="font-semibold text-purple-300">{line.speaker || `${line.ageGroup} ${line.gender}`}</p>
+                      <p className="text-gray-200 mb-3">"{line.text}"</p>
+
+                      {line.voiceType === "auto" ? (
+                        <div>
+                          <p className="text-green-400 text-sm mb-2">✔️ 자동 음성: {line.voiceId}</p>
+                          <button
+                            onClick={() => handleGenerateAudio(line, i)}
+                            disabled={isGeneratingAudio}
+                            className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                              isGeneratingAudio ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-purple-600 transform hover:scale-105'
+                            }`}
+                          >
+                            {isGeneratingAudio ? "생성 중..." : "🎵 음성 생성"}
+                          </button>
+                          {line.generatedAudioUrl && (
+                            <audio
+                              controls
+                              src={line.generatedAudioUrl}
+                              className="mt-3 w-full"
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="bg-yellow-500/20 p-3 rounded-lg border border-yellow-500/30">
+                          <p className="text-yellow-300 font-bold mb-2">🚨 수동 더빙 필요</p>
+                          <p className="text-gray-300 text-sm mb-3">타입캐스트에서 음성을 생성한 뒤 mp3 파일을 업로드해주세요.</p>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(line.text)}
+                            className="bg-gray-600 hover:bg-gray-700 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 mb-3"
+                          >
+                            📋 대본 복사
+                          </button>
+
+                          <input
+                            type="file"
+                            accept="audio/mp3"
+                            onChange={(e) =>
+                              setSpeechLines((prev) =>
+                                prev.map((s, idx) =>
+                                  idx === i ? { ...s, audioFile: e.target.files?.[0] || null } : s
+                                )
+                              )
+                            }
+                            className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer cursor-pointer"
+                          />
+                          {line.audioFile && (
+                            <>
+                              <p className="text-xs mt-2 text-blue-400">
+                                ✔️ 업로드 완료: {line.audioFile.name}
+                              </p>
+                              <audio
+                                controls
+                                src={URL.createObjectURL(line.audioFile)}
+                                className="mt-2 w-full"
+                              />
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
+
+            {/* 최종 렌더링 */}
+            {generatedImages.length > 0 && speechLines.length > 0 && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                  🎬 최종 영상 제작
+                </h2>
+                <button
+                  onClick={handleRender}
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-red-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105"
+                >
+                  🚀 최종 영상 렌더링
+                </button>
+
+                {finalVideoBlob && (
+                  <a
+                    href={URL.createObjectURL(finalVideoBlob)}
+                    download="shorts_final.mp4"
+                    className="mt-4 block w-full text-center bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 transform hover:scale-105"
+                  >
+                    ⬇️ 최종 영상 다운로드
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* 설정 초기화 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                ⚙️ 설정
+              </h2>
+              <button
+                className="text-red-400 hover:text-red-300 underline transition-colors"
+                onClick={() => {
+                  localStorage.removeItem("shorts-config");
+                  location.reload();
+                }}
+              >
+                🔄 모든 설정 초기화
+              </button>
+            </div>
           </div>
-        )}
-
-        <hr />
-
-        <h2 className="font-bold text-lg">⚙️ 설정</h2>
-
-        <button
-          className="text-sm text-red-500 underline mt-2"
-          onClick={() => {
-            localStorage.removeItem("shorts-config");
-            location.reload();
-          }}
-        >
-          🔁 저장 초기화
-        </button>
+        </div>
       </div>
     </div>
   );
-} 
+}
