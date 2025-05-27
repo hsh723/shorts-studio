@@ -10,11 +10,14 @@
   "dependencies": {
     "@ffmpeg/core": "^0.11.0",
     "@ffmpeg/ffmpeg": "^0.11.0",
+    "@types/uuid": "^10.0.0",
     "next": "13.5.4",
     "openai": "^4.103.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-draggable": "^4.4.5"
+    "react-draggable": "^4.4.5",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@types/node": "^20.17.50",
