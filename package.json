@@ -10,6 +10,7 @@
   "dependencies": {
     "@ffmpeg/core": "^0.11.0",
     "@ffmpeg/ffmpeg": "^0.11.0",
+    "elevenlabs-node": "^2.0.3",
     "next": "13.5.4",
     "openai": "^4.103.0",
     "react": "18.2.0",
