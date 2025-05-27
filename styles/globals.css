@@ -1,0 +1,19 @@
+@font-face {
+  font-family: 'CookieRun Regular';
+  src: url('/fonts/CookieRun Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'The Jamsil 3 Regular';
+  src: url('/fonts/The Jamsil 3 Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'esanmanru Medium';
+  src: url('/fonts/esanmanru Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'SB 어그로 T';
+  src: url('/fonts/SB 어그로 T.ttf') format('truetype');
+} 
