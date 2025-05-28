@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import { PromptInput } from '../components/Step1_Prompt/PromptInput';
 import { ScriptList } from '../components/Step1_Prompt/ScriptList';
 import { useScriptStore } from '../lib/scriptStore';
-import { useRouter } from 'next/router';
 
-export default function Home() {
+const Home: NextPage = () => {
   const { selectedScriptId } = useScriptStore();
   const router = useRouter();
 
@@ -41,4 +42,6 @@ export default function Home() {
       </main>
     </div>
   );
-} 
+};
+
+export default Home;

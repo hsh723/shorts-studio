@@ -26,7 +26,7 @@ export default function AutoGenerateButton({ prompt, onResult, onError }: AutoGe
       const { title, script, hashtags } = await scriptRes.json();
 
       // 2. 제목 분리 및 기본 스타일 적용
-      const titleLines = title.split("\n").map(text => ({
+      const titleLines = title.split("\n").map((text: string) => ({
         text,
         fontSize: "20px",
         fontWeight: "bold",

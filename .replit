@@ -1,7 +1,12 @@
 run = "npm run dev"
-hidden = [".config", ".git", ".gitignore", "node_modules"]
+hidden = [".build", ".config"]
+modules = ["nodejs-18:v8-20230920-bd784b9"]
+
+[nix]
+channel = "stable-22_11"
 
 [env]
+XDG_CONFIG_HOME = "/home/runner/.config"
 PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin"
 npm_config_prefix = "/home/runner/$REPL_SLUG/.config/npm/node_global"
 PORT = "5000"
@@ -12,17 +17,23 @@ language = "nodejs"
 [packager.features]
 packageSearch = true
 guessImports = true
+enabledForHosting = false
 
 [languages.javascript]
 pattern = "**/{*.js,*.jsx,*.ts,*.tsx}"
 syntax = "javascript"
 
 [languages.javascript.languageServer]
-start = [ "typescript-language-server", "--stdio" ]
-
-[nix]
-channel = "stable-22_11"
+start = "typescript-language-server --stdio"
 
 [deployment]
-run = ["sh", "-c", "npm run dev"]
-deploymentTarget = "cloudrun" 
+run = ["sh", "-c", "npm run build"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
