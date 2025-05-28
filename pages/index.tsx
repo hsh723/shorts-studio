@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { PromptInput } from '../components/Step1_Prompt/PromptInput';
 import { ScriptList } from '../components/Step1_Prompt/ScriptList';
 import { useScriptStore } from '../lib/scriptStore';
+import { useRouter } from 'next/router';
 
 export default function Home() {
   const { selectedScriptId } = useScriptStore();
+  const router = useRouter();
+
+  const handleNextStep = () => {
+    if (selectedScriptId) {
+      router.push(`/step2?scriptId=${selectedScriptId}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,7 +31,7 @@ export default function Home() {
         {selectedScriptId && (
           <div className="fixed bottom-4 right-4">
             <button
-              onClick={() => {/* 다음 단계로 이동 */}}
+              onClick={handleNextStep}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
             >
               다음 단계로

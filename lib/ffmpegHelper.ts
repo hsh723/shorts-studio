@@ -1,3 +1,15 @@
+/**
+ * FFmpeg WebAssembly 클라이언트 사이드 비디오 처리 유틸리티
+ * 
+ * 주의사항:
+ * 1. 현재 클라이언트 사이드에서 FFmpeg.wasm을 사용하여 처리하고 있습니다.
+ * 2. Replit 환경에서는 리소스 제한으로 인해 대용량 파일 처리에 제한이 있을 수 있습니다.
+ * 3. 향후 서버 사이드 렌더링으로 전환을 고려해야 합니다:
+ *    - Node.js + FFmpeg 서버 구현
+ *    - AWS Lambda + FFmpeg 레이어
+ *    - Cloudflare Workers + FFmpeg
+ */
+
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import type { SubtitleBlock } from "./splitSubtitleByDuration";
 
