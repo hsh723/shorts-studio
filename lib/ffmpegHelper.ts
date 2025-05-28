@@ -4,10 +4,16 @@
  * 주의사항:
  * 1. 현재 클라이언트 사이드에서 FFmpeg.wasm을 사용하여 처리하고 있습니다.
  * 2. Replit 환경에서는 리소스 제한으로 인해 대용량 파일 처리에 제한이 있을 수 있습니다.
- * 3. 향후 서버 사이드 렌더링으로 전환을 고려해야 합니다:
- *    - Node.js + FFmpeg 서버 구현
+ * 3. Vercel 배포 시 서버 사이드 렌더링으로 전환을 고려해야 합니다:
+ *    - Node.js + FFmpeg 서버 구현 (예: Render.com)
  *    - AWS Lambda + FFmpeg 레이어
  *    - Cloudflare Workers + FFmpeg
+ * 
+ * 서버 사이드 렌더링 구현 시 참고사항:
+ * 1. /api/ffmpeg 엔드포인트 생성
+ * 2. 클라이언트에서 Blob 데이터를 서버로 전송
+ * 3. 서버에서 FFmpeg 처리 후 결과 반환
+ * 4. 클라이언트에서 결과 다운로드
  */
 
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
